@@ -3,7 +3,7 @@
     <Metadata>
         <Identity Id="ProjectMigrationHelper.4999df5f-2470-419b-9858-189cf90d0b1d" Version="1.0" Language="en-US" Publisher="Tom Englert" />
         <DisplayName>ProjectMigrationHelper</DisplayName>
-        <Description xml:space="preserve">Empty VSIX Project.</Description>
+        <Description xml:space="preserve">A VS2019 extension that helps to migrate your old style projects to the new VS2017+ format.</Description>
         <License>License</License>
         <Tags>Project SDK Migration</Tags>
     </Metadata>
