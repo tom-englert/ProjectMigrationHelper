@@ -1,0 +1,60 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
+- task: PowerShell@1
+  displayName: 'Set build version'
+  inputs:
+    scriptType: inlineScript
+    inlineScript: |
+     (new-object Net.WebClient).DownloadString("https://raw.github.com/tom-englert/BuildScripts/master/BuildScripts.ps1") | iex
+     Source-SetBuildVersion "ProjectMigrationHelper\Properties\AssemblyInfo.cs" | Build-AppendVersionToBuildNumber
+     Vsix-SetBuildVersion "ProjectMigrationHelper\source.extension.vsixmanifest"
+
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+  inputs:
+    SourceFolder: '$(build.sourcesdirectory)\ProjectMigrationHelper\bin\release'
+    Contents: '*.vsix'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+    CleanTargetFolder: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: Deploy'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: Deploy
+
+- task: PowerShell@1
+  displayName: 'Publish to vsix-gallery'
+  inputs:
+    scriptType: inlineScript
+    inlineScript: |
+     (new-object Net.WebClient).DownloadString("https://raw.github.com/tom-englert/BuildScripts/master/BuildScripts.ps1") | iex
+     Vsix-PublishToGallery "$(build.artifactstagingdirectory)\ProjectMigrationHelper.vsix"
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
