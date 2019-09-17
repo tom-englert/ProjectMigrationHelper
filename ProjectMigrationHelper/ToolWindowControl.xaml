@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="ProjectMigrationHelper.ToolWindowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
+             Padding="20"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+  <StackPanel>
+    <TextBlock TextWrapping="WrapWithOverflow">
+      This tool helps you to validate the migration of your old style projects to the new VS2017+ format.
+      <LineBreak/><LineBreak/> 
+      It creates a simple JSON style fingerprint of all projects in your solution.
+      Create a fingerprint before and after the migration, then compare the fingerprints to ensure there are no semantic differences.
+    </TextBlock>
+    <Decorator Height="30"></Decorator>
+    <Button Content="Create Fingerprint" Click="CreateFingerprint_Click" HorizontalAlignment="Center" Padding="10,3"/>
+  </StackPanel>
+</UserControl>
