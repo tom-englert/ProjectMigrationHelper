@@ -36,7 +36,7 @@
                 {
                     AddExtension = true,
                     CheckPathExists = true,
-                    DefaultExt = ".fingerprint",
+                    DefaultExt = ".json",
                     FileName = DateTime.Now.ToString("yy-MM-dd hh-mm-ss"),
                     InitialDirectory = solution.Folder
                 };
