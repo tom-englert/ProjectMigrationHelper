@@ -1,11 +1,11 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+
+using ProjectMigrationHelper.Properties;
 
 [assembly: AssemblyTitle("ProjectMigrationHelper")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("tom-englert.de")]
 [assembly: AssemblyProduct("ProjectMigrationHelper")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
@@ -14,7 +14,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion(Product.Version)]
 [assembly: AssemblyFileVersion(Product.Version)]
 
-class Product 
+namespace ProjectMigrationHelper.Properties
 {
-    public const string Version = "1.0.0.0";
+    static class Product 
+    {
+        public const string Version = "1.0.0.0";
+    }
 }

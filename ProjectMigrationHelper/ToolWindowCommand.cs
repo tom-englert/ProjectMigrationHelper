@@ -3,8 +3,6 @@
     using System;
     using System.ComponentModel.Design;
 
-    using EnvDTE;
-
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
 
@@ -74,7 +72,9 @@
             var commandService = await package.GetServiceAsync((typeof(IMenuCommandService))) as OleMenuCommandService;
             var vsOutputWindow = await package.GetServiceAsync(typeof(SVsOutputWindow)) as IVsOutputWindow;
             
+            // ReSharper disable AssignNullToNotNullAttribute
             Instance = new ToolWindowCommand(package, commandService, dte, vsOutputWindow);
+            // ReSharper restore AssignNullToNotNullAttribute
         }
 
         /// <summary>
