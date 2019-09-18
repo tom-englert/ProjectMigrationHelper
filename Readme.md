@@ -10,6 +10,8 @@ fail at runtime due to missing resources or content.
 This Visual Studio extension helps you to validate the migration of old style projects to the new VS2017+ sdk format.
 It creates a simple Json style fingerprint of all projects in your solution.
 
+You can find the Project Migration Helper in the tools menu of Visual Studio.
+
 Create a fingerprint before and after the migration, then compare the fingerprints to ensure there are no semantic differences:
 
 ![Sample Difference](SampleDiff.png)
