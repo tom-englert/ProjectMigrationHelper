@@ -1,5 +1,6 @@
 ﻿namespace ProjectMigrationHelper
 {
+    using System;
     using System.IO;
     using System.Windows;
     using System.Windows.Input;
@@ -26,20 +27,36 @@
             try
             {
                 var dte = ToolWindowCommand.Instance.Dte;
+                var tracer = new OutputWindowTracer(ToolWindowCommand.Instance.VsOutputWindow);
 
-                var solution = new DteSolution(dte, new OutputWindowTracer(ToolWindowCommand.Instance.VsOutputWindow));
-                var folder = solution.Folder;
-                if (folder == null)
+                var solution = new DteSolution(dte, tracer);
+                var rootFolder = solution.Folder;
+                if (rootFolder == null)
                     return;
+
+                var targetFolder = Path.Combine(rootFolder, SubFolder.Text);
+
+                Directory.CreateDirectory(targetFolder);
 
                 var fingerPrints = solution.CreateFingerprints();
 
                 foreach (var fingerPrint in fingerPrints)
                 {
-                    var fileName = Path.Combine(folder, $"{fingerPrint.Key}.{FileNameSuffix.Text}.json");
+                    var projectName = fingerPrint.Key;
+                    var contents = fingerPrint.Value.ToString();
+                    if (contents == "{}")
+                        continue;
 
-                    File.WriteAllText(fileName, fingerPrint.Value.ToString());
+                    var fileName = Path.Combine(targetFolder, projectName + ".json");
+
+                    tracer.WriteLine("Create fingerprint: " + fileName);
+
+                    File.WriteAllText(fileName, contents);
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
             }
             finally
             {

@@ -38,6 +38,8 @@
                         index += 1;
                         name = project.Name;
 
+                        _tracer.WriteLine("Reading project: " + name);
+
                         var jProject = AddProjectItems(project.ProjectItems, new JObject());
 
                         items.Add(name, jProject);
@@ -131,6 +133,9 @@
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
             if (projectItem.Object is VSLangProj.References) // MPF project (e.g. WiX) references folder, do not traverse...
+                return;
+
+            if (projectItem.Properties == null)
                 return;
 
             var jProjectItem = new JObject();
