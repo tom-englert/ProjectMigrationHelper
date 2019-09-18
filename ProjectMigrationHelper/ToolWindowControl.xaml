@@ -15,19 +15,20 @@
       This tool helps you to validate the migration of your old style projects to the new VS2017+ format.
       <LineBreak/><LineBreak/> 
       It creates a simple JSON style fingerprint of all projects in your solution.
+      <LineBreak/> 
       Create a fingerprint before and after the migration, then compare the fingerprints to ensure there are no semantic differences.
     </TextBlock>
     <Decorator Height="30"/>
     <TextBlock Text="FileNames:" />
     <StackPanel Orientation="Horizontal">
       <TextBlock Text="&lt;ProjectName&gt;." VerticalAlignment="Center" />
-      <ComboBox x:Name="FileNameSuffix" IsEditable="True">
+      <ComboBox x:Name="FileNameSuffix" IsEditable="True" SelectedIndex="0">
         <system:String>before</system:String>
         <system:String>after</system:String>
       </ComboBox>
       <TextBlock Text=".json" VerticalAlignment="Center" />
     </StackPanel>
     <Decorator Height="30"/>
-    <Button Content="Create Fingerprint" Click="CreateFingerprint_Click" HorizontalAlignment="Center" Padding="10,3"/>
+    <Button Content="Create Fingerprint" Click="CreateFingerprint_Click" HorizontalAlignment="Left" Padding="10,3"/>
   </StackPanel>
 </UserControl>
