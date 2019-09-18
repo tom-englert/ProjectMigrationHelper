@@ -1,11 +1,8 @@
 ﻿namespace ProjectMigrationHelper
 {
-    using System;
     using System.IO;
     using System.Windows;
     using System.Windows.Input;
-
-    using Microsoft.Win32;
 
     /// <summary>
     /// Interaction logic for ToolWindow1Control.
@@ -22,6 +19,8 @@
 
         private void CreateFingerprint_Click(object sender, RoutedEventArgs e)
         {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
             Cursor = Cursors.Wait;
 
             try
@@ -29,21 +28,17 @@
                 var dte = ToolWindowCommand.Instance.Dte;
 
                 var solution = new DteSolution(dte, new OutputWindowTracer(ToolWindowCommand.Instance.VsOutputWindow));
+                var folder = solution.Folder;
+                if (folder == null)
+                    return;
 
-                var fingerPrint = solution.CreateFingerprint().ToString();
+                var fingerPrints = solution.CreateFingerprints();
 
-                var dlg = new SaveFileDialog
+                foreach (var fingerPrint in fingerPrints)
                 {
-                    AddExtension = true,
-                    CheckPathExists = true,
-                    DefaultExt = ".json",
-                    FileName = DateTime.Now.ToString("yy-MM-dd hh-mm-ss"),
-                    InitialDirectory = solution.Folder
-                };
+                    var fileName = Path.Combine(folder, $"{fingerPrint.Key}.{FileNameSuffix.Text}.json");
 
-                if (dlg.ShowDialog() == true)
-                {
-                    File.WriteAllText(dlg.FileName, fingerPrint);
+                    File.WriteAllText(fileName, fingerPrint.Value.ToString());
                 }
             }
             finally

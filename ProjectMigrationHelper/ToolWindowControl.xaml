@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
              Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              Padding="20"
@@ -16,7 +17,17 @@
       It creates a simple JSON style fingerprint of all projects in your solution.
       Create a fingerprint before and after the migration, then compare the fingerprints to ensure there are no semantic differences.
     </TextBlock>
-    <Decorator Height="30"></Decorator>
+    <Decorator Height="30"/>
+    <TextBlock Text="FileNames:" />
+    <StackPanel Orientation="Horizontal">
+      <TextBlock Text="&lt;ProjectName&gt;." VerticalAlignment="Center" />
+      <ComboBox x:Name="FileNameSuffix" IsEditable="True">
+        <system:String>before</system:String>
+        <system:String>after</system:String>
+      </ComboBox>
+      <TextBlock Text=".json" VerticalAlignment="Center" />
+    </StackPanel>
+    <Decorator Height="30"/>
     <Button Content="Create Fingerprint" Click="CreateFingerprint_Click" HorizontalAlignment="Center" Padding="10,3"/>
   </StackPanel>
 </UserControl>

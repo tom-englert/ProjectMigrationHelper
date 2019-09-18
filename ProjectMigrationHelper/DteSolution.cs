@@ -19,14 +19,11 @@
             _tracer = tracer;
         }
 
-        /// <summary>
-        /// Gets all files of all project in the solution.
-        /// </summary>
-        /// <returns>The files.</returns>
-        [NotNull, ItemNotNull]
-        public JObject CreateFingerprint()
+        public IDictionary<string, JObject> CreateFingerprints()
         {
-            var jSolution = new JObject();
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            var items = new Dictionary<string, JObject>();
 
             try
             {
@@ -41,11 +38,10 @@
                         index += 1;
                         name = project.Name;
 
-                        var jProject = new JObject();
+                        var jProject = AddProjectItems(project.ProjectItems, new JObject());
 
-                        jSolution.Add(name, jProject);
+                        items.Add(name, jProject);
 
-                        AddProjectItems(name, project.ProjectItems, jProject);
                     }
                     catch (Exception ex)
                     {
@@ -58,18 +54,22 @@
                 _tracer.TraceError("Error loading projects: {0}", ex);
             }
 
-            return jSolution;
+            return items;
         }
 
-        public string Folder => Path.GetDirectoryName(Solution.FullName);
+        [CanBeNull]
+        public string Folder => Path.GetDirectoryName(Solution?.FullName);
 
         // ReSharper disable once SuspiciousTypeConversion.Global
-        private EnvDTE80.Solution2 Solution => (EnvDTE80.Solution2)Dte.Solution ?? throw new InvalidOperationException();
+        [CanBeNull]
+        private EnvDTE80.Solution2 Solution => (EnvDTE80.Solution2)Dte.Solution;
 
         private EnvDTE80.DTE2 Dte { get; }
 
         private IEnumerable<EnvDTE.Project> GetProjects()
         {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
             var solution = Solution;
 
             var projects = solution?.Projects;
@@ -85,7 +85,7 @@
                 }
                 catch
                 {
-                    // _tracer.TraceError("Error loading project #" + i);
+                    _tracer.TraceError("Error loading project #" + i);
                     continue;
                 }
 
@@ -93,12 +93,12 @@
             }
         }
 
-        private void AddProjectItems([CanBeNull] string projectName, [ItemNotNull][CanBeNull] EnvDTE.ProjectItems projectItems, [NotNull] JObject jProject)
+        private JObject AddProjectItems([ItemNotNull][CanBeNull] EnvDTE.ProjectItems projectItems, [NotNull] JObject jProject)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
             if (projectItems == null)
-                return;
+                return jProject;
 
             try
             {
@@ -108,11 +108,11 @@
                 {
                     try
                     {
-                        AddProjectItems(projectName, projectItem, jProject);
+                        AddProjectItems(projectItem, jProject);
                     }
                     catch
                     {
-                        _tracer.TraceError("Error loading project item #{0} in project {1}.", index, projectName ?? "unknown");
+                        _tracer.TraceError("Error loading project item #{0}", index);
                     }
 
                     index += 1;
@@ -120,11 +120,13 @@
             }
             catch
             {
-                _tracer.TraceError("Error loading a project item in project {0}.", projectName ?? "unknown");
+                _tracer.TraceError("Error loading a project item.");
             }
+
+            return jProject;
         }
 
-        private void AddProjectItems([CanBeNull] string projectName, [NotNull] EnvDTE.ProjectItem projectItem, [NotNull] JObject jParentItem)
+        private void AddProjectItems([NotNull] EnvDTE.ProjectItem projectItem, [NotNull] JObject jParentItem)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -158,17 +160,17 @@
                 }
                 catch (Exception ex)
                 {
-                    _tracer.TraceError("Error reading property {0} in project {1}: {2}", propertyName, projectName ?? "unknown", ex.Message);
+                    _tracer.TraceError("Error reading property {0}: {1}", propertyName, ex.Message);
                 }
             }
 
             jParentItem.Add(projectItem.Name, jProjectItem);
 
-            AddProjectItems(projectName, projectItem.ProjectItems, jProjectItem);
+            AddProjectItems(projectItem.ProjectItems, jProjectItem);
 
             if (projectItem.SubProject != null)
             {
-                AddProjectItems(projectName, projectItem.SubProject.ProjectItems, jProjectItem);
+                AddProjectItems(projectItem.SubProject.ProjectItems, jProjectItem);
             }
         }
     }
