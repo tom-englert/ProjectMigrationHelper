@@ -1,4 +1,6 @@
-## Project Migration Helper
+## Project Migration Helper [![Build Status](https://dev.azure.com/tom-englert/Open%20Source/_apis/build/status/ProjectMigrationHelper?branchName=master)](https://dev.azure.com/tom-englert/Open%20Source/_build/latest?definitionId=29&branchName=master) 
+
+[Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=TomEnglert.ProjectMigrationHelper)
 
 Whether you migrate your projects manually or using e.g. 
 the [CsprojToVs2017 Converter](https://github.com/hvanbakel/CsprojToVs2017) - the new 
