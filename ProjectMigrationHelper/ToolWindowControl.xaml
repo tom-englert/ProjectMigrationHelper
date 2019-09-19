@@ -23,15 +23,15 @@
       <TextBlock Text="Target folder:" VerticalAlignment="Center"/>
       <Decorator Width="10"/>
       <ComboBox x:Name="SubFolder" IsEditable="True" SelectedIndex="0" MinWidth="100">
-        <system:String>before</system:String>
-        <system:String>after</system:String>
+        <system:String>.migration\after</system:String>
+        <system:String>.migration\before</system:String>
       </ComboBox>
     </StackPanel>
     <Decorator Height="10" />
     <StackPanel Orientation="Horizontal">
       <TextBlock Text="Output:" />
       <Decorator Width="10"/>
-      <TextBlock>$(SolutionDir)/<Run Text="{Binding Text, ElementName=SubFolder, Mode=OneWay}" />/$(ProjectName).json</TextBlock>
+      <TextBlock>$(SolutionDir)\<Run Text="{Binding Text, ElementName=SubFolder, Mode=OneWay}" />\$(ProjectName).json</TextBlock>
     </StackPanel>
     <Decorator Height="30"/>
     <Button Content="Create Fingerprint" Click="CreateFingerprint_Click" HorizontalAlignment="Left" Padding="10,3"/>
