@@ -2,7 +2,7 @@
 
 Whether you migrate your projects manually or using e.g. 
 the [CsprojToVs2017 Converter](https://github.com/hvanbakel/CsprojToVs2017) - the new 
-format has so many implicit defaults that you can never be sure that the migrated project 
+sdk style format has so many implicit defaults that you can never be sure that the migrated project 
 does exactly the same as the original one. 
 An unnoticed switch of an ```ItemType``` or ```BuildAction``` can easily make the project 
 fail at runtime due to missing resources or content.
