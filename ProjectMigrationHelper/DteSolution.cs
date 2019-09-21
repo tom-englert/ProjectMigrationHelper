@@ -148,7 +148,7 @@
                 {
                     propertyName = property.Name;
 
-                    var ignored = new[] { "{", "Date", "File", "Extender", "LocalPath", "URL", "Identity" };
+                    var ignored = new[] { "{", "Date", "File", "Extender", "LocalPath", "URL", "Identity", "BuildAction", "SubType" };
                     if (ignored.Any(prefix => propertyName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                         continue;
 
@@ -159,10 +159,9 @@
                         continue;
                     if (propertyValue is bool booleanValue && !booleanValue)
                         continue;
-                    if (propertyName == "Link" && string.Equals(projectItem.Name, propertyValue as string, StringComparison.OrdinalIgnoreCase))
+                    if (((propertyName == "Link") || (propertyName == "FolderName")) 
+                        && string.Equals(projectItem.Name, propertyValue as string, StringComparison.OrdinalIgnoreCase))
                         continue;
-                    if (propertyName == "BuildAction" && Enum.TryParse(propertyValue.ToString(), out BuildAction buildAction))
-                        propertyValue = buildAction.ToString();
 
                     jProjectItem.Add(propertyName, JToken.FromObject(propertyValue));
                 }
@@ -180,21 +179,6 @@
             {
                 AddProjectItems(projectItem.SubProject.ProjectItems, jProjectItem);
             }
-        }
-
-        [SuppressMessage("ReSharper", "UnusedMember.Local")]
-        private enum BuildAction
-        {
-            None = 0,
-            Compile = 1,
-            Content = 2,
-            EmbeddedResource = 3,
-            AdditionalFiles = 4,
-            CodeAnalysisDictionary = 5,
-            ApplicationDefinition = 6,
-            Page = 7,
-            Resource = 8,
-            SplashScreen = 9,
         }
     }
 }
