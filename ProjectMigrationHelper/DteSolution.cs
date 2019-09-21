@@ -115,7 +115,7 @@
                     }
                     catch
                     {
-                        _tracer.TraceError("Error loading project item #{0}", index);
+                        _tracer.TraceWarning("Can't load project item #{0}", index);
                     }
 
                     index += 1;
@@ -123,7 +123,7 @@
             }
             catch
             {
-                _tracer.TraceError("Error loading a project item.");
+                _tracer.TraceWarning("Can't load a project item.");
             }
 
             return jProject;
@@ -167,7 +167,7 @@
                 }
                 catch (Exception ex)
                 {
-                    _tracer.TraceError("Error reading property {0}: {1}", propertyName, ex.Message);
+                    _tracer.TraceWarning("Can't read property {0}: {1}", propertyName, ex.Message);
                 }
             }
 
