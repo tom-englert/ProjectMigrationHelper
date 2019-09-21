@@ -154,7 +154,8 @@
 
                     // exclude properties with their default values:
                     var propertyValue = property.Value;
-
+                    if (propertyValue == null)
+                        continue;
                     if (propertyValue is string stringValue && string.IsNullOrEmpty(stringValue))
                         continue;
                     if (propertyValue is bool booleanValue && !booleanValue)
