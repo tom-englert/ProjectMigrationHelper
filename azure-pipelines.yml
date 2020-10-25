@@ -15,12 +15,6 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
-
 - task: PowerShell@1
   displayName: 'Set build version'
   inputs:
@@ -30,11 +24,12 @@ steps:
      Source-SetBuildVersion "ProjectMigrationHelper\Properties\AssemblyInfo.cs" | Build-AppendVersionToBuildNumber
      Vsix-SetBuildVersion "ProjectMigrationHelper\source.extension.vsixmanifest"
 
-- task: VSBuild@1
+- task: MSBuild@1
   inputs:
     solution: '$(solution)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+    msbuildArguments: '-restore'
 
 - task: CopyFiles@2
   displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
