@@ -9,14 +9,14 @@
              Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              Padding="20"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="500" d:DesignWidth="500">
   <StackPanel>
     <TextBlock TextWrapping="WrapWithOverflow">
-      This tool helps you to validate the migration of your old style projects to the new VS2017+ format.
+      This tool helps you to validate the migration of your old style projects to the new VS2017+ format and/or from MEF1 (System.ComponentModel.Composition) to MEF2 (System.Composition).
       <LineBreak/><LineBreak/> 
-      It creates a simple JSON style fingerprint of all projects in your solution.
+      It creates simple JSON style fingerprints of all projects in your solution.
       <LineBreak/> 
-      Create a fingerprint before and after the migration, then compare the fingerprints to ensure there are no semantic differences.
+      Create fingerprints before and after the migration, then compare the fingerprints to ensure there are no semantic differences.
     </TextBlock>
     <Decorator Height="30"/>
     <StackPanel Orientation="Horizontal">
@@ -34,6 +34,6 @@
       <TextBlock>$(SolutionDir)\<Run Text="{Binding Text, ElementName=SubFolder, Mode=OneWay}" />\$(ProjectName).json</TextBlock>
     </StackPanel>
     <Decorator Height="30"/>
-    <Button Content="Create Fingerprint" Click="CreateFingerprint_Click" HorizontalAlignment="Left" Padding="10,3"/>
+    <Button Content="Create fingerprints" Click="CreateFingerprint_Click" HorizontalAlignment="Left" Padding="10,3"/>
   </StackPanel>
 </UserControl>

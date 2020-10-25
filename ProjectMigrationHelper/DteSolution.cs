@@ -1,15 +1,18 @@
-﻿namespace ProjectMigrationHelper
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+
+using JetBrains.Annotations;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using TomsToolbox.Composition;
+
+namespace ProjectMigrationHelper
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Linq;
-
-    using JetBrains.Annotations;
-
-    using Newtonsoft.Json.Linq;
-
     internal class DteSolution
     {
         private readonly ITracer _tracer;
@@ -20,7 +23,8 @@
             _tracer = tracer;
         }
 
-        public IDictionary<string, JObject> CreateFingerprints()
+        [NotNull]
+        public IDictionary<string, JObject> CreateProjectFingerprints()
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -30,7 +34,7 @@
             {
                 var index = 0;
 
-                foreach (var project in GetProjects().OrderBy(item => item.Name))
+                foreach (var project in GetProjects())
                 {
                     var name = @"<unknown>";
 
@@ -39,7 +43,7 @@
                         index += 1;
                         name = project.Name;
 
-                        _tracer.WriteLine("Reading project: " + name);
+                        _tracer.WriteLine("Reading project file: " + name);
 
                         var jProject = AddProjectItems(project.ProjectItems, new JObject());
 
@@ -59,6 +63,81 @@
 
             return items;
         }
+
+        [NotNull]
+        public IDictionary<string, string> CreateMefFingerprints()
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            var items = new Dictionary<string, string>();
+
+            try
+            {
+                var index = 0;
+
+                foreach (var project in GetProjects())
+                {
+                    var name = @"<unknown>";
+
+                    try
+                    {
+                        index += 1;
+                        name = project.Name;
+
+                        if (!(project.Object is VSLangProj.VSProject))
+                            continue;
+
+                        _tracer.WriteLine("Reading MEF attributes from project: " + name);
+
+                        var activeConfiguration = project.ConfigurationManager?.ActiveConfiguration;
+                        if (activeConfiguration == null)
+                            continue;
+
+                        var primaryOutputFileName = activeConfiguration.OutputGroups?.Item("Built").GetFileNames()?.FirstOrDefault();
+                        var properties = activeConfiguration.Properties;
+                        var outputDirectory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(project.FullName), properties?.Item(@"OutputPath")?.Value as string ?? string.Empty));
+                        var primaryOutputFilePath = Path.Combine(outputDirectory, primaryOutputFileName);
+
+                        if (primaryOutputFilePath == null || !File.Exists(primaryOutputFilePath))
+                        {
+                            _tracer.TraceWarning("Skip analysis for project, primary output does not exist: {0}[{1}]@{2}=>{3}", name, index, activeConfiguration.ToDisplayName(), primaryOutputFileName ?? "<unknown>");
+                            continue;
+                        }
+
+                        var assembly = Assembly.LoadFrom(primaryOutputFilePath);
+
+                        var metadata = MetadataReader.Read(assembly);
+
+                        if (!metadata.Any())
+                        {
+                            _tracer.WriteLine("Project skipped, no MEF annotations found: {0}[{1}]@{2}=>{3}", name, index, activeConfiguration.ToDisplayName(), primaryOutputFileName ?? "<unknown>");
+                            continue;
+                        }
+
+                        var data = Serialize(metadata);
+
+                        items.Add(name, data);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _tracer.TraceWarning("Error loading project {0}[{1}]: {2}", name, index, ex);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _tracer.TraceError("Error loading projects: {0}", ex);
+            }
+
+            return items;
+        }
+
+        private static string Serialize(IList<ExportInfo> result)
+        {
+            return JsonConvert.SerializeObject(result, Formatting.Indented);
+        }
+
 
         [CanBeNull]
         public string Folder => Path.GetDirectoryName(Solution?.FullName);
@@ -96,6 +175,7 @@
             }
         }
 
+        [NotNull]
         private JObject AddProjectItems([ItemNotNull][CanBeNull] EnvDTE.ProjectItems projectItems, [NotNull] JObject jProject)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
@@ -160,7 +240,7 @@
                         continue;
                     if (propertyValue is bool booleanValue && !booleanValue)
                         continue;
-                    if (((propertyName == "Link") || (propertyName == "FolderName")) 
+                    if (((propertyName == "Link") || (propertyName == "FolderName"))
                         && string.Equals(projectItem.Name, propertyValue as string, StringComparison.OrdinalIgnoreCase))
                         continue;
 
@@ -180,6 +260,36 @@
             {
                 AddProjectItems(projectItem.SubProject.ProjectItems, jProjectItem);
             }
+        }
+    }
+
+    internal static class ExtensionMethods
+    {
+        [CanBeNull]
+        public static IEnumerable<string> GetFileNames([CanBeNull] this EnvDTE.OutputGroup outputGroup)
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            try
+            {
+                return ((Array)outputGroup?.FileNames)?.OfType<string>();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        [NotNull]
+        public static string ToDisplayName([CanBeNull] this EnvDTE.Configuration configuration)
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (configuration == null)
+                return "<undefined>";
+
+            return configuration.ConfigurationName + "|" + configuration.PlatformName;
+
         }
     }
 }

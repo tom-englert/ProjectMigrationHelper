@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ProjectMigrationHelper.4999df5f-2470-419b-9858-189cf90d0b1d" Version="1.1" Language="en-US" Publisher="TomEnglert" />
+        <Identity Id="ProjectMigrationHelper.4999df5f-2470-419b-9858-189cf90d0b1d" Version="1.2" Language="en-US" Publisher="TomEnglert" />
         <DisplayName>ProjectMigrationHelper</DisplayName>
-        <Description xml:space="preserve">A VS2019 extension that helps to migrate your old style projects to the new VS2017+ format.</Description>
+        <Description xml:space="preserve">A VS2019 extension that helps to migrate your old style projects to the new VS2017+ format and/or MEF1 attributes to MEF2.</Description>
         <License>License</License>
         <Tags>Project SDK Migration</Tags>
     </Metadata>

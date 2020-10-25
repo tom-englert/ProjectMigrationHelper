@@ -38,9 +38,9 @@
 
                 Directory.CreateDirectory(targetFolder);
 
-                var fingerPrints = solution.CreateFingerprints();
+                var projectFingerPrints = solution.CreateProjectFingerprints();
 
-                foreach (var fingerPrint in fingerPrints)
+                foreach (var fingerPrint in projectFingerPrints)
                 {
                     var projectName = fingerPrint.Key;
                     var contents = fingerPrint.Value.ToString();
@@ -49,7 +49,22 @@
 
                     var fileName = Path.Combine(targetFolder, projectName + ".json");
 
-                    tracer.WriteLine("Create fingerprint: " + fileName);
+                    tracer.WriteLine("Create project fingerprint: " + fileName);
+
+                    File.WriteAllText(fileName, contents);
+                }
+
+
+                var mefFingerPrints = solution.CreateMefFingerprints();
+
+                foreach (var fingerPrint in mefFingerPrints)
+                {
+                    var projectName = fingerPrint.Key;
+                    var contents = fingerPrint.Value;
+
+                    var fileName = Path.Combine(targetFolder, projectName + ".mef.json");
+
+                    tracer.WriteLine("Create MEF fingerprint: " + fileName);
 
                     File.WriteAllText(fileName, contents);
                 }

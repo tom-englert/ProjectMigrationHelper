@@ -7,7 +7,7 @@ using ProjectMigrationHelper.Properties;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("tom-englert.de")]
 [assembly: AssemblyProduct("ProjectMigrationHelper")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCopyright("© 2020, tom-englert.de")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -18,6 +18,6 @@ namespace ProjectMigrationHelper.Properties
 {
     static class Product 
     {
-        public const string Version = "1.1.0.0";
+        public const string Version = "1.2.0.0";
     }
 }
