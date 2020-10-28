@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using EnvDTE80;
+
 using JetBrains.Annotations;
 
 using Newtonsoft.Json;
@@ -16,11 +18,13 @@ namespace ProjectMigrationHelper
     internal class DteSolution
     {
         private readonly ITracer _tracer;
+        private readonly IList<EnvDTE.Project> _projects;
 
         public DteSolution(EnvDTE80.DTE2 dte, ITracer tracer)
         {
             Dte = dte;
             _tracer = tracer;
+            _projects = EnumerateProjects();
         }
 
         [NotNull]
@@ -34,7 +38,7 @@ namespace ProjectMigrationHelper
             {
                 var index = 0;
 
-                foreach (var project in GetProjects())
+                foreach (var project in _projects)
                 {
                     var name = @"<unknown>";
 
@@ -75,7 +79,7 @@ namespace ProjectMigrationHelper
             {
                 var index = 0;
 
-                foreach (var project in GetProjects())
+                foreach (var project in _projects)
                 {
                     var name = @"<unknown>";
 
@@ -147,33 +151,6 @@ namespace ProjectMigrationHelper
         private EnvDTE80.Solution2 Solution => (EnvDTE80.Solution2)Dte.Solution;
 
         private EnvDTE80.DTE2 Dte { get; }
-
-        private IEnumerable<EnvDTE.Project> GetProjects()
-        {
-            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-
-            var solution = Solution;
-
-            var projects = solution?.Projects;
-            if (projects == null)
-                yield break;
-
-            for (var i = 1; i <= projects.Count; i++)
-            {
-                EnvDTE.Project project;
-                try
-                {
-                    project = projects.Item(i);
-                }
-                catch
-                {
-                    _tracer.TraceError("Error loading project #" + i);
-                    continue;
-                }
-
-                yield return project;
-            }
-        }
 
         [NotNull]
         private JObject AddProjectItems([ItemNotNull][CanBeNull] EnvDTE.ProjectItems projectItems, [NotNull] JObject jProject)
@@ -259,6 +236,125 @@ namespace ProjectMigrationHelper
             if (projectItem.SubProject != null)
             {
                 AddProjectItems(projectItem.SubProject.ProjectItems, jProjectItem);
+            }
+        }
+
+        private IList<EnvDTE.Project> EnumerateProjects()
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            var items = new List<EnvDTE.Project>();
+
+            try
+            {
+                var index = 0;
+
+                foreach (var project in GetRootProjects())
+                {
+                    var name = @"<unknown>";
+
+                    try
+                    {
+                        index += 1;
+                        name = project.Name;
+
+                        _tracer.WriteLine("Load project: {0}", name);
+
+                        items.Add(project);
+
+                        GetSubProjects(name, project.ProjectItems, items);
+                    }
+                    catch (Exception ex)
+                    {
+                        _tracer.TraceWarning("Error loading project {0}[{1}]: {2}", name, index, ex);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _tracer.TraceError("Error loading projects: {0}", ex);
+            }
+
+            return items.Where(item => item.Kind != ProjectKinds.vsProjectKindSolutionFolder).ToList().AsReadOnly();
+        }
+
+        private IEnumerable<EnvDTE.Project> GetRootProjects()
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            var solution = Solution;
+
+            var projects = solution?.Projects;
+            if (projects == null)
+                yield break;
+
+            for (var i = 1; i <= projects.Count; i++)
+            {
+                EnvDTE.Project project;
+                try
+                {
+                    project = projects.Item(i);
+                }
+                catch
+                {
+                    _tracer.TraceError("Error loading project #" + i);
+                    continue;
+                }
+
+                yield return project;
+            }
+        }
+
+        private void GetSubProjects(string projectName, EnvDTE.ProjectItems projectItems, IList<EnvDTE.Project> items)
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (projectItems == null)
+                return;
+
+            try
+            {
+                var index = 1;
+
+                foreach (var projectItem in projectItems.OfType<EnvDTE.ProjectItem>())
+                {
+                    try
+                    {
+                        GetSubProjects(projectName, projectItem, items);
+                    }
+                    catch
+                    {
+                        _tracer.TraceError("Error loading project item #{0} in project {1}.", index, projectName ?? "unknown");
+                    }
+
+                    index += 1;
+                }
+            }
+            catch
+            {
+                _tracer.TraceError("Error loading a project item in project {0}.", projectName ?? "unknown");
+            }
+        }
+
+        private void GetSubProjects(string projectName, EnvDTE.ProjectItem projectItem, IList<EnvDTE.Project> items)
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (projectItem.Object is VSLangProj.References) // MPF project (e.g. WiX) references folder, do not traverse...
+                return;
+
+            if (projectItem.Object is EnvDTE.Project project)
+            {
+                var name = project.Name;
+                _tracer.WriteLine("Load project: {0}", name);
+                items.Add(project);
+            }
+
+            GetSubProjects(projectName, projectItem.ProjectItems, items);
+
+            if (projectItem.SubProject != null)
+            {
+                GetSubProjects(projectName, projectItem.SubProject.ProjectItems, items);
             }
         }
     }
