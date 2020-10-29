@@ -34,6 +34,8 @@
       <TextBlock>$(SolutionDir)\<Run Text="{Binding Text, ElementName=SubFolder, Mode=OneWay}" />\$(ProjectName).json</TextBlock>
     </StackPanel>
     <Decorator Height="30"/>
-    <Button Content="Create fingerprints" Click="CreateFingerprint_Click" HorizontalAlignment="Left" Padding="10,3"/>
+    <Button Content="Create project fingerprints" Click="CreateProjectFingerprints_Click" HorizontalAlignment="Left" Padding="10,3"/>
+    <Decorator Height="10"/>
+    <Button Content="Create MEF fingerprints" Click="CreateMEFFingerprints_Click" HorizontalAlignment="Left" Padding="10,3"/>
   </StackPanel>
 </UserControl>

@@ -133,7 +133,7 @@ namespace ProjectMigrationHelper
                 process.StandardInput.Close();
 
                 var output = process.StandardOutput.ReadToEnd();
-                
+
                 process.WaitForExit();
 
                 var items = JsonConvert.DeserializeObject<Dictionary<string, string>>(output);
@@ -209,7 +209,7 @@ namespace ProjectMigrationHelper
                 {
                     propertyName = property.Name;
 
-                    var ignored = new[] { "{", "Date", "File", "Extender", "LocalPath", "URL", "Identity", "BuildAction", "SubType" };
+                    var ignored = new[] { "{", "Date", "File", "Extender", "LocalPath", "URL", "Identity", "BuildAction", "SubType", "HTMLTitle", "ModifiedBy", "__id", "Author" };
                     if (ignored.Any(prefix => propertyName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                         continue;
 
@@ -226,6 +226,10 @@ namespace ProjectMigrationHelper
                         continue;
 
                     jProjectItem.Add(propertyName, JToken.FromObject(propertyValue));
+                }
+                catch (NotImplementedException)
+                {
+                    // Just ignore...
                 }
                 catch (Exception ex)
                 {

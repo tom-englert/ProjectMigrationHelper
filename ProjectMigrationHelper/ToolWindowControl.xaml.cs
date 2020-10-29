@@ -18,7 +18,7 @@
             InitializeComponent();
         }
 
-        private void CreateFingerprint_Click(object sender, RoutedEventArgs e)
+        private void CreateProjectFingerprints_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -54,6 +54,38 @@
                     File.WriteAllText(fileName, contents);
                 }
 
+                tracer.WriteLine("-------------- Done --------------");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                Cursor = Cursors.Arrow;
+            }
+        }
+
+        private void CreateMEFFingerprints_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            Cursor = Cursors.Wait;
+
+            try
+            {
+                var dte = ToolWindowCommand.Instance.Dte;
+                var tracer = new OutputWindowTracer(ToolWindowCommand.Instance.VsOutputWindow);
+
+                var solution = new DteSolution(dte, tracer);
+                var rootFolder = solution.Folder;
+                if (rootFolder == null)
+                    return;
+
+                var targetFolder = Path.Combine(rootFolder, SubFolder.Text);
+
+                Directory.CreateDirectory(targetFolder);
+
                 var mefFingerPrints = solution.CreateMefFingerprints();
 
                 foreach (var fingerPrint in mefFingerPrints)
@@ -70,6 +102,8 @@
 
                     File.WriteAllText(fileName, contents);
                 }
+
+                tracer.WriteLine("-------------- Done --------------");
             }
             catch (Exception ex)
             {

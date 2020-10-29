@@ -10,30 +10,28 @@
     public class OutputWindowTracer : ITracer
     {
         private readonly IVsOutputWindow _outputWindow;
+        private readonly IVsOutputWindowPane _pane;
 
         private static Guid _outputPaneGuid = new Guid("{51DB7742-B447-4BF8-B62F-D82FE1B3B848}");
 
         public OutputWindowTracer(IVsOutputWindow outputWindow)
         {
             _outputWindow = outputWindow;
+
+            var errorCode = _outputWindow.GetPane(ref _outputPaneGuid, out var pane);
+
+            if (ErrorHandler.Failed(errorCode) || pane == null)
+            {
+                _outputWindow.CreatePane(ref _outputPaneGuid, "Project Migration Helper", Convert.ToInt32(true), Convert.ToInt32(false));
+                _outputWindow.GetPane(ref _outputPaneGuid, out pane);
+            }
+
+            _pane = pane;
         }
 
         private void LogMessageToOutputWindow([CanBeNull] string value)
         {
-            Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var errorCode = _outputWindow.GetPane(ref _outputPaneGuid, out var pane);
-
-                if (ErrorHandler.Failed(errorCode) || pane == null)
-                {
-                    _outputWindow.CreatePane(ref _outputPaneGuid, "Project Migration Helper", Convert.ToInt32(true), Convert.ToInt32(false));
-                    _outputWindow.GetPane(ref _outputPaneGuid, out pane);
-                }
-
-                pane?.OutputString(value);
-            });
+            _pane.OutputStringThreadSafe(value);
         }
 
         public void TraceError(string value)
