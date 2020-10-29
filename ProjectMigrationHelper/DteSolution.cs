@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 using EnvDTE80;
 
@@ -73,10 +75,9 @@ namespace ProjectMigrationHelper
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
-            var items = new Dictionary<string, string>();
-
             try
             {
+                var assemblies = new Dictionary<string, string>();
                 var index = 0;
 
                 foreach (var project in _projects)
@@ -108,40 +109,43 @@ namespace ProjectMigrationHelper
                             continue;
                         }
 
-                        var assembly = Assembly.LoadFrom(primaryOutputFilePath);
-
-                        var metadata = MetadataReader.Read(assembly);
-
-                        if (!metadata.Any())
-                        {
-                            _tracer.WriteLine("Project skipped, no MEF annotations found: {0}[{1}]@{2}=>{3}", name, index, activeConfiguration.ToDisplayName(), primaryOutputFileName ?? "<unknown>");
-                            continue;
-                        }
-
-                        var data = Serialize(metadata);
-
-                        items.Add(name, data);
-
+                        assemblies.Add(name, primaryOutputFilePath);
                     }
                     catch (Exception ex)
                     {
                         _tracer.TraceWarning("Error loading project {0}[{1}]: {2}", name, index, ex);
                     }
                 }
+
+                var input = JsonConvert.SerializeObject(assemblies);
+                var assemblyLocation = GetType().Assembly.Location;
+                var startInfo = new ProcessStartInfo(assemblyLocation)
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                };
+
+                var process = Process.Start(startInfo);
+                process.StandardInput.Write(input);
+                process.StandardInput.Flush();
+                process.StandardInput.Close();
+
+                var output = process.StandardOutput.ReadToEnd();
+                
+                process.WaitForExit();
+
+                var items = JsonConvert.DeserializeObject<Dictionary<string, string>>(output);
+                return items;
             }
             catch (Exception ex)
             {
                 _tracer.TraceError("Error loading projects: {0}", ex);
             }
 
-            return items;
+            return new Dictionary<string, string>();
         }
-
-        private static string Serialize(IList<ExportInfo> result)
-        {
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
-        }
-
 
         [CanBeNull]
         public string Folder => Path.GetDirectoryName(Solution?.FullName);

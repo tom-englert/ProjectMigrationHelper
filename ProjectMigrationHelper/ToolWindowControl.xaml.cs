@@ -54,13 +54,15 @@
                     File.WriteAllText(fileName, contents);
                 }
 
-
                 var mefFingerPrints = solution.CreateMefFingerprints();
 
                 foreach (var fingerPrint in mefFingerPrints)
                 {
                     var projectName = fingerPrint.Key;
                     var contents = fingerPrint.Value;
+
+                    if (string.IsNullOrEmpty(contents))
+                        continue;
 
                     var fileName = Path.Combine(targetFolder, projectName + ".mef.json");
 

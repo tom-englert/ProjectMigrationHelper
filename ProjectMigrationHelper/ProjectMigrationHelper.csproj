@@ -4,6 +4,12 @@
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,7 +17,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProjectGuid>{47C04FD9-506F-4EEF-ABBD-6D7C8CF6A56C}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ProjectMigrationHelper</RootNamespace>
     <AssemblyName>ProjectMigrationHelper</AssemblyName>
@@ -48,6 +54,7 @@
     <Compile Include="DteSolution.cs" />
     <Compile Include="ITracer.cs" />
     <Compile Include="OutputWindowTracer.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProjectMigrationHelperPackage.cs" />
     <Compile Include="ToolWindow.cs" />
@@ -57,10 +64,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
     <Content Include="License">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="..\Key.snk">
+      <Link>Key.snk</Link>
+    </None>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -79,6 +90,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Fody">
+      <Version>6.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="ILMerge.Fody">
+      <Version>1.13.0</Version>
+    </PackageReference>
     <PackageReference Include="JetBrains.Annotations">
       <Version>2020.2.0-eap</Version>
       <PrivateAssets>all</PrivateAssets>
