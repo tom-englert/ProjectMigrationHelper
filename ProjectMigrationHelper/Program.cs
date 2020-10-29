@@ -58,7 +58,8 @@ namespace ProjectMigrationHelper
             var metadata = MetadataReader.Read(assembly);
             if (!metadata.Any())
                 return null;
-            return Serialize(metadata);
+
+            return Serialize(metadata.OrderBy(m => m.Type?.FullName).ToList());
         }
 
         private static string Serialize(IList<ExportInfo> result)
